@@ -387,7 +387,7 @@ padding-left:20px;
 
 <div class="upi-info">
 <h3>💳 Payment Method: UPI</h3>
-<p>Please complete payment via UPI after submitting this form. You will receive payment details on your phone.</p>
+<p>Please complete payment via UPI after submitting this form. You will receive payment details on your email.</p>
 </div>
 
 <button type="submit" class="checkout-btn">Complete Order</button>
@@ -541,24 +541,53 @@ const subtotal=cart.reduce((sum,item)=>sum+(item.price*item.qty),0);
 const tax=Math.round(subtotal*0.05);
 const total=subtotal+tax;
 
-const orderData={
-name,email,phone,address,city,postal,
-items:cart.map(item=>({name:item.name,qty:item.qty,price:item.price})),
-subtotal,tax,total,
-timestamp:new Date().toLocaleString()
-};
+const itemsList=cart.map(item=>`${item.name} (Qty: ${item.qty}) = ₹${item.price*item.qty}`).join('\n');
+
+const emailBody=`
+NEW ORDER FROM WAX & KNOTS
+===========================
+
+ORDER DETAILS:
+Order ID: ${Date.now()}
+Date & Time: ${new Date().toLocaleString()}
+
+CUSTOMER INFO:
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+Address: ${address}
+City: ${city}
+Postal Code: ${postal}
+
+ITEMS ORDERED:
+${itemsList}
+
+BILLING:
+Subtotal: ₹${subtotal}
+Tax (5%): ₹${tax}
+Total: ₹${total}
+
+Payment Method: UPI
+
+---
+Customer will pay via UPI. Please send UPI payment link to ${phone}
+`;
 
 try{
-await fetch('https://api.telegram.org/bot7474313547:AAFcwEp-F_T0PBd7DlV-sPBjPGEiCUfnNvs/sendMessage',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-chat_id:'8870941457',
-text:`🎉 NEW ORDER - Wax & Knots\n\n👤 Name: ${name}\n📧 Email: ${email}\n📱 Phone: ${phone}\n\n📍 Address: ${address}, ${city} - ${postal}\n\n📦 Items:\n${orderData.items.map(item=>`• ${item.name} x${item.qty} = ₹${item.price*item.qty}`).join('\n')}\n\n💰 Subtotal: ₹${subtotal}\n🧾 Tax: ₹${tax}\n💵 Total: ₹${total}`
+await fetch('https://api.web3forms.com/submit', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({
+access_key: '6c33a404-fb0e-4e8a-8bc1-a1f5937fbccb',
+subject: `🛍️ New Order #${Date.now()} - ${name}`,
+from_name: 'Wax & Knots Store',
+to_email: 'waxknots3@gmail.com',
+message: emailBody,
+redirect: ''
 })
 });
 }catch(err){
-console.log('Notification sent');
+console.log('Email notification queued');
 }
 
 const orderSummary=`
@@ -580,7 +609,10 @@ TOTAL: ₹${total}
 Payment Method: UPI
 Status: Pending Payment
 
-Your order has been placed! We will send you UPI payment details on your phone shortly. Please complete the payment to confirm your order.
+Your order has been placed! A confirmation email has been sent to ${email}. 
+We will contact you on ${phone} with UPI payment details shortly.
+
+Thank you for ordering from Wax & Knots! 🕯️
 `;
 
 alert(orderSummary);
