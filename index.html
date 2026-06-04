@@ -121,11 +121,11 @@ cursor:pointer;
 <script>
 
 let products=[
-{name:"Peony Candle",price:299,img:"assets/p3.png"},
-{name:"Uruli Candle",price:399,img:"assets/p1.png"},
-{name:"Lavender Bloom",price:349,img:"assets/p4.png"},
-{name:"Tea Lights Set",price:129,img:"assets/p2.png"},
-{name:"Sunflower Trio",price:999,img:"assets/p5.png"}
+{name:"Peony Candle",price:299,img:"assets/p3.png",desc:"Beautiful hand-poured peony scented candle with floral notes"},
+{name:"Uruli Candle",price:399,img:"assets/p1.png",desc:"Traditional uruli design with warm, earthy tones"},
+{name:"Lavender Bloom",price:349,img:"assets/p4.png",desc:"Relaxing lavender scent perfect for meditation and unwinding"},
+{name:"Tea Lights Set",price:129,img:"assets/p2.png",desc:"Set of premium tea lights with long-lasting burn time"},
+{name:"Sunflower Trio",price:999,img:"assets/p5.png",desc:"Elegant trio of sunflower-scented artisan candles"}
 ];
 
 let shop=document.getElementById("shop");
@@ -137,15 +137,18 @@ shop.innerHTML+=`
 <div class="card">
 <img src="${p.img}" alt="${p.name}">
 <h3>${p.name}</h3>
+<p style="font-size:14px;color:#666;">${p.desc}</p>
 <p class="price">₹${p.price}</p>
-<button onclick="buy('${p.name}',${p.price})">Order</button>
+<button onclick="buy('${p.name}',${p.price})">Order Now</button>
 </div>
 `;
 });
 }
 
 function buy(name,price){
-alert("Order: "+name+" ₹"+price+" - contact via WhatsApp or GPay");
+const message = `I want to order: ${name} - ₹${price}`;
+const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+window.open(whatsappUrl, '_blank');
 }
 
 render();
