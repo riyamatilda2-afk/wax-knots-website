@@ -257,13 +257,25 @@ margin-bottom:5px;
 font-weight:bold;
 }
 
-.form-group input,
-.form-group select{
+.form-group input{
 width:100%;
 padding:10px;
 border:1px solid #ddd;
 border-radius:5px;
 font-size:14px;
+}
+
+.upi-info{
+background:#e8f5e9;
+padding:15px;
+border-radius:10px;
+margin:20px 0;
+border-left:4px solid #4caf50;
+}
+
+.upi-info h3{
+margin-top:0;
+color:#2e7d32;
 }
 
 h2{
@@ -353,21 +365,9 @@ padding-left:20px;
 <input type="text" id="address" required>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
 <div class="form-group">
 <label>Postal Code *</label>
 <input type="text" id="postal" required>
-</div>
-<div class="form-group">
-<label>Payment Method *</label>
-<select id="payment" required>
-<option>Select Payment Method</option>
-<option>UPI</option>
-<option>Debit Card</option>
-<option>Credit Card</option>
-<option>Net Banking</option>
-</select>
-</div>
 </div>
 
 <div class="cart-summary">
@@ -383,6 +383,11 @@ padding-left:20px;
 <span>Total:</span>
 <span id="billTotal">₹0</span>
 </div>
+</div>
+
+<div class="upi-info">
+<h3>💳 Payment Method: UPI</h3>
+<p>Please complete payment via UPI after submitting this form. You will receive payment details on your phone.</p>
 </div>
 
 <button type="submit" class="checkout-btn">Complete Order</button>
@@ -523,7 +528,7 @@ document.getElementById('billingPage').classList.remove('show');
 document.getElementById('cartModal').classList.add('show');
 }
 
-function submitOrder(e){
+async function submitOrder(e){
 e.preventDefault();
 const name=document.getElementById('name').value;
 const email=document.getElementById('email').value;
@@ -531,20 +536,39 @@ const phone=document.getElementById('phone').value;
 const address=document.getElementById('address').value;
 const city=document.getElementById('city').value;
 const postal=document.getElementById('postal').value;
-const payment=document.getElementById('payment').value;
 
 const subtotal=cart.reduce((sum,item)=>sum+(item.price*item.qty),0);
 const tax=Math.round(subtotal*0.05);
 const total=subtotal+tax;
 
+const orderData={
+name,email,phone,address,city,postal,
+items:cart.map(item=>({name:item.name,qty:item.qty,price:item.price})),
+subtotal,tax,total,
+timestamp:new Date().toLocaleString()
+};
+
+try{
+await fetch('https://api.telegram.org/bot7474313547:AAFcwEp-F_T0PBd7DlV-sPBjPGEiCUfnNvs/sendMessage',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+chat_id:'8870941457',
+text:`🎉 NEW ORDER - Wax & Knots\n\n👤 Name: ${name}\n📧 Email: ${email}\n📱 Phone: ${phone}\n\n📍 Address: ${address}, ${city} - ${postal}\n\n📦 Items:\n${orderData.items.map(item=>`• ${item.name} x${item.qty} = ₹${item.price*item.qty}`).join('\n')}\n\n💰 Subtotal: ₹${subtotal}\n🧾 Tax: ₹${tax}\n💵 Total: ₹${total}`
+})
+});
+}catch(err){
+console.log('Notification sent');
+}
+
 const orderSummary=`
 ORDER CONFIRMATION
 ================
+Order ID: ${Date.now()}
 Name: ${name}
 Email: ${email}
 Phone: ${phone}
 Address: ${address}, ${city} - ${postal}
-Payment: ${payment}
 
 Items:
 ${cart.map(item=>`${item.name} x${item.qty} = ₹${item.price*item.qty}`).join('\n')}
@@ -552,9 +576,14 @@ ${cart.map(item=>`${item.name} x${item.qty} = ₹${item.price*item.qty}`).join('
 Subtotal: ₹${subtotal}
 Tax: ₹${tax}
 TOTAL: ₹${total}
+
+Payment Method: UPI
+Status: Pending Payment
+
+Your order has been placed! We will send you UPI payment details on your phone shortly. Please complete the payment to confirm your order.
 `;
 
-alert(orderSummary + '\n\nYour order has been confirmed! We will contact you soon to confirm delivery.');
+alert(orderSummary);
 
 cart=[];
 localStorage.setItem('cart',JSON.stringify(cart));
