@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Sitemap: https://riyamatilda2-afk.github.io/wax-knots-website/sitemap.xml
+Disallow: /admin/
+Disallow: /private/
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
