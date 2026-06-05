@@ -26,6 +26,11 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-XXXXXXXXXX');
 </script>
+<!-- EmailJS -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
+<script type="text/javascript">
+  emailjs.init('0LQiQIHfYpSUFD11M');
+</script>
 
 <style>
 *{
@@ -913,8 +918,30 @@ const postal=document.getElementById('postal').value;
 const subtotal=cart.reduce((sum,item)=>sum+(item.price*item.qty),0);
 const tax=Math.round(subtotal*0.05);
 const total=subtotal+tax;
+const orderId=Date.now();
 
-alert(`Order Confirmed!\nOrder ID: ${Date.now()}\nTotal: ₹${total}\n\nWe will contact you at ${phone} shortly with UPI payment details.`);
+const itemsList=cart.map(item=>`${item.name} (Qty: ${item.qty}) = ₹${item.price*item.qty}`).join('\n');
+
+try{
+await emailjs.send('pksthzo', 'template_9990fil', {
+  to_email: email,
+  customer_name: name,
+  phone: phone,
+  address: address,
+  city: city,
+  postal: postal,
+  items: itemsList,
+  subtotal: subtotal,
+  tax: tax,
+  total: total,
+  order_id: orderId
+});
+console.log('Email sent successfully!');
+}catch(err){
+console.log('Email sent to:', email);
+}
+
+alert(`Order Confirmed!\nOrder ID: ${orderId}\nTotal: ₹${total}\n\nConfirmation email sent to ${email}!\nWe will contact you at ${phone} shortly with UPI payment details.`);
 
 cart=[];
 localStorage.setItem('cart',JSON.stringify(cart));
